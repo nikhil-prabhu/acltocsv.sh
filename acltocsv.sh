@@ -20,7 +20,7 @@ READ_DATA="no"
 # FUNCTIONS #
 #############
 
-function _extract_webdisptab() { #quickdoc: Extracts the required data block(s) from the web dispatcher ACL file.
+function _webdisptab_to_csv() { #quickdoc: Extracts the required data block(s) from the web dispatcher ACL file.
 
     # LOCAL: Line read from ACL file
     local _line
@@ -77,10 +77,6 @@ function _extract_webdisptab() { #quickdoc: Extracts the required data block(s) 
     sed -i '1s/^/PARTNER NAME , IP ADDRESS , EMPLOYEE ID , ENTRY DATE , CONSULTANT , EMAIL ID\n/' "$CSV_WEBDISPTAB"
 }
 
-function _convert_webdisptab() { #quickdoc: Converts the webdisptab file to a CSV file.
-    echo &> /dev/null # Don't do anything for now
-}
-
-function _convert_saprouttab() { #quickdoc: Converts the saprouttab file to a CSV file.
+function _saprouttab_to_csv() { #quickdoc: Converts the saprouttab file to a CSV file.
     echo &> /dev/null # Don't do anything for now
 }
