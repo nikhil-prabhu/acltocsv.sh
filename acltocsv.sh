@@ -41,7 +41,7 @@ function _extract_webdisptab() { #quickdoc: Extracts the required data block(s) 
 	then
 	    if [[ "$_line" =~ ^(##-- .*: .* --##)$ ]]
 	    then
-		echo "$_line" | sed -n -e "s/^.*.*: //p" | tr -d "\-\-##"
+		echo "$_line" | sed -e 's/[0-9]*[:]//g'
 	    else
 		echo "$_line"
 	    fi
