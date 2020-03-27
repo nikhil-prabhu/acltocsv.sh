@@ -59,14 +59,14 @@ function _webdisptab_to_csv() { #quickdoc: Extracts the required data block(s) f
 	then
 	    if [[ "$_line" =~ ^(##-- .*: .* --##)$ ]]
 	    then
-		_partner_name=$(echo "$_line" | sed -e 's/[0-9]*[:]//g' | tr -d '#\-')
+		_partner_name=$(echo "$_line" | sed -e 's/[0-9]*[:]//g' | tr -d '#\-' | xargs)
 	    else
 		_ip_address=$(echo "$_line" | awk '{print $5}')
-		_employee_id=$(echo "$_line" | grep -E "# .*: .*" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $1}')
-		_entry_date=$(echo "$_line" | grep -E "# .*: .*" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $2}')
-		_consultant_name=$(echo "$_line" | grep -E "# .*: .*" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $3}')
-		_consultant_email=$(echo "$_line" | grep -E "# .*: .*" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $4}')
-		echo "$_partner_name, $_ip_address , $_employee_id , $_entry_date , $_consultant_name , $_consultant_email" >> "$CSV_WEBDISPTAB"
+		_employee_id=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $1}' | xargs)
+		_entry_date=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $2}' | xargs)
+		_consultant_name=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $3}' | xargs)
+		_consultant_email=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $4}' | xargs)
+		echo "$_partner_name,$_ip_address,$_employee_id,$_entry_date,$_consultant_name,$_consultant_email" >> "$CSV_WEBDISPTAB"
 	    fi
 	fi
     done < "$WEBDISPTAB"
