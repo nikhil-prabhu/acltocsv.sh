@@ -13,6 +13,9 @@ SAPROUTTAB="/usr/sap/WD2/whitelist/saprouttab_test"
 # CSV file for web dispatcher entries
 CSV_WEBDISPTAB="./webdisptab.csv"
 
+# CSV file for sap router entries
+CSV_SAPROUTTAB="./saprouttab.csv"
+
 # Tell the script when to start reading data from the file
 READ_DATA="no"
 
@@ -78,5 +81,65 @@ function _webdisptab_to_csv() { #quickdoc: Extracts the required data block(s) f
 }
 
 function _saprouttab_to_csv() { #quickdoc: Converts the saprouttab file to a CSV file.
-    echo &> /dev/null # Don't do anything for now
+    # LOCAL: Line read from ACL file
+    local _line
+
+    # LOCAL: Name of the partner for current block of entries
+    local _partner_name
+
+    # LOCAL: IP address
+    local _ip_address
+
+    # LOCAL: System hostname
+    local _hostname
+
+    # LOCAL: System ID (SID)
+    local _sid
+
+    # LOCAL: Port
+    local _port
+
+    # LOCAL: Employee id
+    local _employee_id
+
+    # LOCAL: Date of entry
+    local _entry_date
+
+    # LOCAL: Name of partner's technical consultant
+    local _consultant_name
+    
+    # LOCAL: Technical consultant email id
+    local _consultant_email
+
+    while read _line
+    do
+	if [[ "$_line" =~ ^(##-- .*: .* --##)$ ]]
+	then
+	    READ_DATA="yes"
+	fi
+
+	if [ "$READ_DATA" = "yes" ]
+	then
+	    if [[ "$_line" =~ ^(##-- .*: .* --##)$ ]]
+	    then
+		_partner_name=$(echo "$_line" | sed -e 's/[0-9]*[:]//g' | tr -d '#\-' | xargs)
+	    else
+		_ip_address=$(echo "$_line" | awk '{print $2}' | xargs)
+		_hostname=$(echo "$_line" | awk '{print $3}' | xargs)
+		_sid=$(grep -E "(^|\s)${_hostname}($|\s)" "$SAPROUTTAB" | head -n 1 | awk '{print $2}' | tr -d ':' | xargs)
+		_port=$(echo "$_line" | awk '{print $4}' | xargs)
+		       _employee_id=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $1}' | xargs)
+		       _entry_date=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $2}' | xargs)
+		       _consultant_name=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $3}' | xargs)
+		       _consultant_email=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $4}' | xargs)
+		       echo "$_partner_name,$_ip_address,$_sid,$_hostname,$_employee_id,$_entry_date,$_consultant_name,$_consultant_email" >> "$CSV_SAPROUTTAB"
+	    fi
+	fi
+    done < "$SAPROUTTAB"
+
+    
+    sort -o "$CSV_SAPROUTTAB" "$CSV_SAPROUTTAB"
+
+    sed -i '1s/^/\n/' "$CSV_SAPROUTTAB"
+    sed -i '1s/^/PARTNER NAME , IP ADDRESS, SYSTEM, HOSTNAME , EMPLOYEE ID , ENTRY DATE , CONSULTANT , EMAIL ID\n/' "$CSV_SAPROUTTAB"
 }
