@@ -128,11 +128,11 @@ function _saprouttab_to_csv() { #quickdoc: Converts the saprouttab file to a CSV
 		_hostname=$(echo "$_line" | awk '{print $3}' | xargs)
 		_sid=$(grep -E "(^|\s)${_hostname}($|\s)" "$SAPROUTTAB" | head -n 1 | awk '{print $2}' | tr -d ':' | xargs)
 		_port=$(echo "$_line" | awk '{print $4}' | xargs)
-		       _employee_id=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $1}' | xargs)
-		       _entry_date=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $2}' | xargs)
-		       _consultant_name=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $3}' | xargs)
-		       _consultant_email=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $4}' | xargs)
-		       echo "$_partner_name,$_ip_address,$_sid,$_hostname,$_employee_id,$_entry_date,$_consultant_name,$_consultant_email" >> "$CSV_SAPROUTTAB"
+		_employee_id=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $1}' | xargs)
+		_entry_date=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $2}' | xargs)
+		_consultant_name=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $3}' | xargs)
+		_consultant_email=$(echo "$_line" | sed -n -e 's/^.*: //p' | awk -F "|" '{print $4}' | xargs)
+		echo "$_partner_name,$_ip_address,$_sid,$_hostname,$_employee_id,$_entry_date,$_consultant_name,$_consultant_email" >> "$CSV_SAPROUTTAB"
 	    fi
 	fi
     done < "$SAPROUTTAB"
@@ -143,3 +143,50 @@ function _saprouttab_to_csv() { #quickdoc: Converts the saprouttab file to a CSV
     sed -i '1s/^/\n/' "$CSV_SAPROUTTAB"
     sed -i '1s/^/PARTNER NAME , IP ADDRESS, SYSTEM, HOSTNAME , EMPLOYEE ID , ENTRY DATE , CONSULTANT , EMAIL ID\n/' "$CSV_SAPROUTTAB"
 }
+
+function _acl_to_csv() { #quickdoc: Main function that calls all other functions.
+    # LOCAL: Choice of ACL file
+    local _acl_choice
+
+    while :
+    do
+	echo "
+    Enter your choice of ACL file(s):
+
+    1. Both (webdisptab and saprouttab).
+    2. Only web dispatcher (webdisptab).
+    3. Only sap router (saprouttab)."
+
+	echo ""
+	echo -n "> "
+	read -n 1 _acl_choice
+
+	if [[ "$_acl_choice" =~ [123] ]]
+	then
+	    break
+	else
+	    echo "Invalid choice."
+	fi
+    done
+
+    if [ "$_acl_choice" -eq 1 ]
+    then
+	echo "Generating webdisptab CSV file..."
+	_webdisptab_to_csv
+	echo "Done."
+	echo "Generating saprouttab CSV file..."
+	_saprouttab_to_csv
+	echo "Done."
+    elif [ "$_acl_choice" -eq 2 ]
+    then
+	echo "Generating webdisptab CSV file..."
+	_webdisptab_to_csv
+	echo "Done."
+    else
+	echo "Generating saprouttab CSV file..."
+	_saprouttab_to_csv
+	echo "Done."
+    fi
+}
+
+_acl_to_csv
